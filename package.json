@@ -1,0 +1,29 @@
+{
+  "name": "mysql-rcm",
+  "version": "1.0.0",
+  "description": "Auto Mapping of MySQL to Route, Controller and Model format with Express ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sameerwasim/mysql-rcm.git"
+  },
+  "keywords": [
+    "mysql-rcm",
+    "mysql",
+    "mysql",
+    "express"
+  ],
+  "author": "Sameer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sameerwasim/mysql-rcm/issues"
+  },
+  "homepage": "https://github.com/sameerwasim/mysql-rcm#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^2.3.3"
+  }
+}
