@@ -1,39 +1,24 @@
-const router = require("express").Router();
-const controller = require("./controller");
+const connection = require("./mysql");
+const routing = require("./routing");
 
-const Operations = {
-  find: "get",
-  findOne: "get",
-  insert: "post",
-  update: "put",
-  delete: "delete",
+const MySQL = (params) => {
+  const { config, tables } = params;
+
+  if (config) {
+    this.connect = connection(config);
+  } else {
+    console.error("MySQL RCM Error: Missing MySQL Connection Configuration");
+    return -1;
+  }
+
+  if (tables) {
+    this.routing = routing(tables, this.connect);
+  } else {
+    console.error("MySQL RCM Error: Missing Tables");
+    return -1;
+  }
+
+  return this.routing;
 };
 
-const PathParam = {
-  find: "",
-  findOne: "/:id",
-  insert: "",
-  update: "/:id",
-  delete: "/:id",
-};
-
-MySqlRCM = (mysqlRCM) => {
-  const { name, operations } = mysqlRCM;
-
-  operations.forEach((operation) => {
-    const path = "/" + name + PathParam[operation.name];
-
-    if (operation.middleware) router[Operations[operation.name]](path, operation.middleware, (req, res) => controller[operation.name](req, res));
-    else router[Operations[operation.name]](path, (req, res) => controller[operation.name](req, res));
-  });
-
-  //   operations.includes("find") && router.get("/" + path, middleware, controller.find);
-  //   operations.includes("findOne") && router.get("/" + path + "/:id", middleware, controller.findOne);
-  //   operations.includes("create") && router.post("/" + path, middleware, controller.create);
-  //   operations.includes("update") && router.put("/" + path + "/:id", middleware, controller.update);
-  //   operations.includes("delete") && router.delete("/" + path + "/:id", middleware, controller.delete);
-
-  return router;
-};
-
-module.exports = MySqlRCM;
+module.exports = MySQL;

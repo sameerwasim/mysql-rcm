@@ -1,42 +1,42 @@
-const Model = require("./model");
+const bodyToSQL = (body, db) => {
+  const values = [];
+  Object.keys(body).map((key, i) => {
+    values.push(`\`${key}\` = ${db.escape(body[key])}`);
+  });
 
-exports.find = (req, res) => {
-  const data = new Model(req.query);
-  Model.find(data, (err, result) => {
-    if (err) res.status(404).send(err);
+  return values;
+};
+
+exports.get = (req, res, _sql) => {
+  _sql.db.query(`SELECT * FROM ${_sql.name}`, (err, result) => {
+    if (err) res.status(401).send(err);
     else res.json(result);
   });
 };
 
-exports.findOne = (req, res) => {
-  const data = new Model(req.params);
-  Model.findOne(data, (err, result) => {
-    if (err) res.status(404).send(err);
+exports.post = (req, res, _sql) => {
+  const values = bodyToSQL(req.body, _sql.db);
+
+  _sql.db.query(`INSERT INTO ${_sql.name} SET ${values}`, (err, result) => {
+    if (err) res.status(401).send(err);
     else res.json(result);
   });
 };
 
-exports.insert = (req, res) => {
-  const data = new Model(req.body);
-  Model.insert(data, (err, result) => {
-    if (err) res.status(404).send(err);
+exports.put = (req, res, _sql) => {
+  const id = req.params.id;
+  const values = bodyToSQL(req.body, _sql.db);
+
+  _sql.db.query(`UPDATE ${_sql.name} SET ${values} WHERE id = ?`, id, (err, result) => {
+    if (err) res.status(401).send(err);
     else res.json(result);
   });
 };
 
-exports.update = (req, res) => {
-  req.body.id = req.params.id;
-  const data = new Model(req.body);
-  Model.update(data, (err, result) => {
-    if (err) res.status(404).send(err);
-    else res.json(result);
-  });
-};
-
-exports.delete = (req, res) => {
-  const data = new Model(req.params);
-  Model.delete(data, (err, result) => {
-    if (err) res.status(404).send(err);
+exports.delete = (req, res, _sql) => {
+  const id = req.params.id;
+  _sql.db.query(`DELETE FROM ${_sql.name} WHERE id = ?`, id, (err, result) => {
+    if (err) res.status(401).send(err);
     else res.json(result);
   });
 };
