@@ -1,7 +1,7 @@
 const bodyToSQL = (body, db) => {
   const values = [];
   Object.keys(body).map((key, i) => {
-    values.push(`\`${key}\` = ${db.escape(body[key])}`);
+    values.push(`\`${key.replace(/[\W_]+/g, " ")}\` = ${db.escape(body[key])}`);
   });
 
   return values;
