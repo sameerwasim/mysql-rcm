@@ -1,16 +1,34 @@
 const bodyToSQL = (body, db) => {
   const values = [];
   Object.keys(body).map((key, i) => {
-    values.push(`\`${key.replace(/[\W_]+/g, " ")}\` = ${db.escape(body[key])}`);
+    if (body[key]) values.push(`\`${key.replace(/[\W_]+/g, " ")}\` = ${db.escape(body[key])}`);
   });
 
   return values;
 };
 
 exports.get = (req, res, _sql) => {
-  _sql.db.query(`SELECT * FROM ${_sql.name}`, (err, result) => {
+  var { filters, pagination } = req.query;
+  if (filters) {
+    try {
+      filters = bodyToSQL(JSON.parse(filters), _sql.db);
+    } catch (err) {
+      res.status(401).send("Error while parsing filters query");
+    }
+  }
+
+  if (pagination) {
+    pagination = JSON.parse(pagination);
+  }
+
+  _sql.db.query(`SELECT * FROM ${_sql.name} ${filters ? `WHERE ${filters.join(" AND ")}` : ""} ${pagination ? `LIMIT ${pagination[0]}, ${pagination[1]}` : ""}`, (err, result) => {
     if (err) res.status(401).send(err);
-    else res.json(result);
+    else {
+      _sql.db.query(`SELECT count(*) as total FROM ${_sql.name} ${filters ? `WHERE ${filters.join(" AND ")}` : ""}`, (err, total) => {
+        if (err) res.status(401).send(err);
+        else res.json({ data: result, total: total?.[0]?.total || 0 });
+      });
+    }
   });
 };
 
@@ -34,9 +52,22 @@ exports.put = (req, res, _sql) => {
 };
 
 exports.delete = (req, res, _sql) => {
-  const id = req.params.id;
-  _sql.db.query(`DELETE FROM ${_sql.name} WHERE id = ?`, id, (err, result) => {
-    if (err) res.status(401).send(err);
-    else res.json(result);
-  });
+  try {
+    if (req.params && req.params.id) {
+      const id = req.params?.id || 0;
+      _sql.db.query(`DELETE FROM ${_sql.name} WHERE id = ?`, id, (err, result) => {
+        if (err) res.status(401).send(err);
+        else res.json(result);
+      });
+    } else {
+      let id = req.query?.id.split(",") || [];
+      id = id.map((item) => _sql.db.escape(item));
+      _sql.db.query(`DELETE FROM ${_sql.name} WHERE id IN (${id})`, (err, result) => {
+        if (err) res.status(401).send(err);
+        else res.json(result);
+      });
+    }
+  } catch (err) {
+    res.status(401).send("Error while deleting");
+  }
 };

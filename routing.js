@@ -37,11 +37,11 @@ module.exports = (tables, db) => {
 
     if (endpoints.includes("DELETE")) {
       if (validator && points.includes("DELETE")) {
-        router.delete("/" + table.name + "/:id", validator, (req, res) => {
+        router.delete(["/" + table.name, "/" + table.name + "/:id"], validator, (req, res) => {
           controller.delete(req, res, _sql);
         });
       } else {
-        router.delete("/" + table.name + "/:id", (req, res) => {
+        router.delete(["/" + table.name, "/" + table.name + "/:id"], (req, res) => {
           controller.delete(req, res, _sql);
         });
       }
